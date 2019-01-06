@@ -1,0 +1,16 @@
+{
+  "name": "es6-imports-in-module-script-tag-test",
+  "version": "1.0.0",
+  "description": "ES6 modules implementation test in browsers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Marcin Kołodziejczak",
+  "license": "MIT",
+  "dependencies": {
+    "lit-element-webcomponents-playground": "github:kolodziejczakM/lit-element-webcomponents-playground#rollup-config-es6-bundle",
+    "lodash-es": "^4.17.11"
+  }
+}

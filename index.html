@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>ES6 modules implementation test in browsers</title>
+        <script type="module">
+            import { LitElement, html } from '@polymer/lit-element'; // (1) 
+            // (1) It is not supported by the browsers, see: https://developers.google.com/web/fundamentals/primers/modules
+            // 'also just changing this import line to: import { LitElement, html } from './node_modules/@polymer/lit-element/lit-element.js'
+            // won't help, because this file has other “bare” module specifiers inside, like this from our point (1). 
+            // We have to change all those imports recursively to make it works directly through browsers <script type="module"> tag... 
+            // Or just bundle our code with some tool (Webpack / Rollup.js) and import those modules from node_modules with that tools.
+
+            class MyElement extends LitElement {
+        
+                static get properties() {
+                return {
+                    mood: {type: String}
+                };
+                }
+        
+                constructor() {
+                super();
+                this.mood = 'happy';
+                }
+        
+                render() {
+                return html`<style> .mood { color: green; } </style>
+                    Web Components are <span class="mood">${this.mood}</span>!`;
+                }
+        
+            }
+        
+            customElements.define('my-element', MyElement);
+        </script>
+        <script type="module" src="node_modules/lit-element-webcomponents-playground/dist/bundle.esm.js"></script>
+        <!-- This file has also import { LitElement, html } from '@polymer/lit-element'; inside -->
+
+        <script type="module">
+        import upperCase from './node_modules/lodash-es/upperCase.js'; // putting here just 'node_modules' won't work - './' is needed.
+
+        console.log('upperCase("lala"): ', upperCase('lala'));
+        </script>
+    </head>
+    <body>
+        <h2>Hello there!</h2>
+        <my-element mood="happy"></my-element>
+        <featured-dropdown
+                chosen-option='{ "label": "Poland", "value": "PL" }'
+                options='[
+                    { "label": "Poland", "value": "PL" },
+                    { "label": "Germany", "value": "DE" },
+                    { "label": "Sweden", "value": "SE" },
+                    { "label": "Norway", "value": "NO" }
+                ]'
+        >
+    </featured-dropdown>
+
+    <!-- 
+        Without any code changes only lodash example should work. You can't see these two WebComponents due to errors.
+        If you want to make them work:
+
+            1. Change import clause from line 9 to: 
+                import { LitElement, html } from './node_modules/@polymer/lit-element/lit-element.js'
+
+            2. Change import clause inside file: 'node_modules/lit-element-webcomponents-playground/dist/bundle.esm.js' to the one mentioned above.
+
+            3. Navigate to './node_modules/@polymer/lit-element/lit-element.js' and change all its import paths to relative ones. Thus, change this:
+
+            import { TemplateResult } from 'lit-html';
+            import { render } from 'lit-html/lib/shady-render';
+            import { UpdatingElement } from './lib/updating-element.js';
+            export * from './lib/updating-element.js';
+            export * from './lib/decorators.js';
+            export { html, svg } from 'lit-html/lit-html';
+
+            to this:
+
+            import { TemplateResult } from '../../lit-html/lit-html.js';
+            import { render } from '../../lit-html/lib/shady-render.js';
+            import { UpdatingElement } from './lib/updating-element.js';
+            export * from './lib/updating-element.js';
+            export * from './lib/decorators.js';
+            export { html, svg } from '../../lit-html/lit-html.js';
+
+            and refresh your browser. It should work right now. Tested on local server created with serve command: https://www.npmjs.com/package/serve
+        -->
+    </body>
+</html>
