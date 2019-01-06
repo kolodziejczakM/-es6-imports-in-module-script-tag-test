@@ -6,12 +6,14 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>ES6 modules implementation test in browsers</title>
         <script type="module">
-            import { LitElement, html } from '@polymer/lit-element'; // (1) 
-            // (1) It is not supported by the browsers, see: https://developers.google.com/web/fundamentals/primers/modules
-            // 'also just changing this import line to: import { LitElement, html } from './node_modules/@polymer/lit-element/lit-element.js'
-            // won't help, because this file has other “bare” module specifiers inside, like this from our point (1). 
-            // We have to change all those imports recursively to make it works directly through browsers <script type="module"> tag... 
-            // Or just bundle our code with some tool (Webpack / Rollup.js) and import those modules from node_modules with that tools.
+            import { LitElement, html } from '@polymer/lit-element';  // (1) 
+            // (1) is not supported by the browsers, see details here: https://developers.google.com/web/fundamentals/primers/modules
+            // Furthermore, just changing this import clause to: import { LitElement, html } from './node_modules/@polymer/lit-element/lit-element.js'
+            // won't help, because this file has other so-called 'bare module specifiers' inside. 
+            // We have to change all those imports recursively to make it works directly through browser's <script type="module"> tag*... 
+            // Scroll down to see the solution.
+            
+            // *Or just bundle your app with some tool (e.g. Webpack) and import all kind of modules (CJS/ESM/UMD etc.) as in line 9.
 
             class MyElement extends LitElement {
         
@@ -35,13 +37,15 @@
         
             customElements.define('my-element', MyElement);
         </script>
+
+        <!-- This module has also "import { LitElement, html } from '@polymer/lit-element';" inside. We'll have to do something with it. -->
+        <!-- Keep scrolling down -->
         <script type="module" src="node_modules/lit-element-webcomponents-playground/dist/bundle.esm.js"></script>
-        <!-- This file has also import { LitElement, html } from '@polymer/lit-element'; inside -->
 
         <script type="module">
-        import upperCase from './node_modules/lodash-es/upperCase.js'; // putting here just 'node_modules' won't work - './' is needed.
+            import upperCase from './node_modules/lodash-es/upperCase.js'; // Notice: putting here just 'node_modules' won't work - './' is vital.
 
-        console.log('upperCase("lala"): ', upperCase('lala'));
+            console.log('upperCase("lala"): ', upperCase('lala'));
         </script>
     </head>
     <body>
@@ -59,15 +63,17 @@
     </featured-dropdown>
 
     <!-- 
-        Without any code changes only lodash example should work. You can't see these two WebComponents due to errors.
+        Hello there:)
+        Without any code changes only lodash example will work. You can't see these two WebComponents because of errors (see browser console).
         If you want to make them work:
 
             1. Change import clause from line 9 to: 
                 import { LitElement, html } from './node_modules/@polymer/lit-element/lit-element.js'
 
-            2. Change import clause inside file: 'node_modules/lit-element-webcomponents-playground/dist/bundle.esm.js' to the one mentioned above.
+            2. Change import clause inside file: 'node_modules/lit-element-webcomponents-playground/dist/bundle.esm.js' to:
+                import { LitElement, html } from '../../@polymer/lit-element/lit-element.js'
 
-            3. Navigate to './node_modules/@polymer/lit-element/lit-element.js' and change all its import paths to relative ones. Thus, change this:
+            3. Navigate to './node_modules/@polymer/lit-element/lit-element.js' and modify all its import paths to relative ones. Thus, change this:
 
             import { TemplateResult } from 'lit-html';
             import { render } from 'lit-html/lib/shady-render';
@@ -85,7 +91,13 @@
             export * from './lib/decorators.js';
             export { html, svg } from '../../lit-html/lit-html.js';
 
-            and refresh your browser. It should work right now. Tested on local server created with serve command: https://www.npmjs.com/package/serve
+            and refresh your browser. You should be able to see rendered WebComponents. 
+
+
+            ---
+            It has been tested on local server created with `serve` command leveraging https://www.npmjs.com/package/serve,
+            Tested for: @polymer/lit-element@0.6.5. 
+            Note: @polymer/lit-element seats in node_modules because it is a 'lit-element-webcomponents-playground' dependency.
         -->
     </body>
 </html>
